@@ -1,4 +1,4 @@
-from litellm import completion
+from litellm import completion, stream_chunk_builder
 import json
 import platform
 import base64
@@ -54,16 +54,40 @@ class AgentBrain:
                 content.append({"type": "text", "text": seg})
         return content
 
+    def _read_response_stream(self,stream):
+        chunks = []
+        is_thinking_start = False
+        for chunk in stream:
+            chunks.append(chunk)
+
+            if not chunk.choices:
+                continue
+            delta = chunk.choices[0].delta
+            reasoning = getattr(delta, "reasoning_content", None) or ""
+            if not reasoning:
+                continue
+
+            if not is_thinking_start:
+                is_thinking_start = True
+                print("...思考中...")
+            print(reasoning, end="", flush=True)
+        if is_thinking_start:
+            print("\n...思考结束...")
+        return stream_chunk_builder(chunks, messages=self.messages).choices[0].message
+
     def think(self, prompt):
         try:
             content = self._prompt_to_content(prompt)
             self.messages.append({"role": "user", "content": content})
 
-            message = completion(
+            stream = completion(
                 model=self.model,
                 messages=self.messages,
                 tools=self.tools_definition,
-            ).choices[0].message
+                stream=True,
+            )
+            message = self._read_response_stream(stream)
+            
             self.messages.append(self.parse_response_message(message))
             self.save_log()
             if hasattr(message, "tool_calls") and message.tool_calls:

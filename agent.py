@@ -3,7 +3,8 @@
 # from brain_with_tool_use_prompt import AgentBrain
 # from brain_with_tool_use_tools import AgentBrain
 # from brain_by_litellm import AgentBrain
-from brain_support_image import AgentBrain
+# from brain_support_image import AgentBrain
+from brain_print_thinking import AgentBrain
 from tools import AgentTools
 
 class SimpleAgent:
