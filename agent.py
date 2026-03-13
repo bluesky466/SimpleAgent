@@ -1,32 +1,28 @@
-# from brain_simple import AgentBrain
-# from brain_with_memory import AgentBrain
-# from brain_with_tool_use_prompt import AgentBrain
-# from brain_with_tool_use_tools import AgentBrain
-# from brain_by_litellm import AgentBrain
-# from brain_support_image import AgentBrain
-from brain_print_thinking import AgentBrain
+import asyncio
+from brain import AgentBrain
 from tools import AgentTools
+
 
 class SimpleAgent:
     def __init__(self):
-        self.tools = AgentTools()
-        # self.brain = AgentBrain()
-        self.brain = AgentBrain(self.tools)
+        self._tools = AgentTools()
+        self._brain = None
     
-    def run(self):
-        while True:
-            try:
-                user_input = input("请输入(Ctrl+C 退出): ")
-            except KeyboardInterrupt:
-                print("\n再见!")
-                break
-            if len(user_input) == 0:
-                continue
-            print("." * 20)
-            response = self.brain.think(user_input)
-            print(response)
-            print("=" * 20)
-        
+    async def run(self):
+        async with self._tools.init():
+            self._brain = AgentBrain()
+            await self._brain.init(self._tools)
+            while True:
+                try:
+                    user_input = input("请输入(Ctrl+C 退出): ")
+                except (KeyboardInterrupt, EOFError):
+                    print("\n再见!")
+                    break
+                if len(user_input) == 0:
+                    continue
+                print("." * 20)
+                await self._brain.think(user_input)
+                print("=" * 20)
+
 if __name__ == "__main__":
-    my_agent = SimpleAgent()
-    my_agent.run()
+    asyncio.run(SimpleAgent().run())

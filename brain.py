@@ -9,13 +9,13 @@ from pathlib import Path
 IMG_PLACEHOLDER_PATTERN = re.compile(r"\{img:([^}]+)\}")
 
 class AgentBrain:
-    def __init__(self, tools):
-        self.model = "zai/glm-4.6v"
-        self.tools = tools
-        self.tools_definition = tools.get_definition_for_json()
-        self.messages = [{"role": "system", "content": self.__get_system_prompt()},]
+    async def init(self, tools):
+        self._model = "zai/glm-4.6v"
+        self._tools = tools
+        self._tools_definition = await tools.get_tool_definition_for_json()
+        self._messages = [{"role": "system", "content": self._get_system_prompt()},]
 
-    def __get_system_prompt(self):
+    def _get_system_prompt(self):
         runtime = f"{platform.system()} {platform.machine()}, Python {platform.python_version()}"
         return f"""
         你是一个AI智能助手.
@@ -54,60 +54,64 @@ class AgentBrain:
                 content.append({"type": "text", "text": seg})
         return content
 
-    def _read_response_stream(self,stream):
+    def _read_response_stream(self, stream, in_deep_thinking=False):
         chunks = []
-        is_thinking_start = False
         for chunk in stream:
             chunks.append(chunk)
 
             if not chunk.choices:
                 continue
             delta = chunk.choices[0].delta
+
             reasoning = getattr(delta, "reasoning_content", None) or ""
-            if not reasoning:
+            content = getattr(delta, "content", None) or ""
+            if not reasoning and not content:
                 continue
 
-            if not is_thinking_start:
-                is_thinking_start = True
-                print("...思考中...")
-            print(reasoning, end="", flush=True)
-        if is_thinking_start:
-            print("\n...思考结束...")
-        return stream_chunk_builder(chunks, messages=self.messages).choices[0].message
+            if not in_deep_thinking:
+                in_deep_thinking = True
+                print("...深度思考中...")
+            if reasoning:
+                print(reasoning, end="", flush=True)
+            if content:
+                print(content, end="", flush=True)
+        return stream_chunk_builder(chunks, messages=self._messages).choices[0].message
 
-    def think(self, prompt):
+    async def think(self, prompt, in_deep_thinking=False):
         try:
             content = self._prompt_to_content(prompt)
-            self.messages.append({"role": "user", "content": content})
+            self._messages.append({"role": "user", "content": content})
 
             stream = completion(
-                model=self.model,
-                messages=self.messages,
-                tools=self.tools_definition,
+                model=self._model,
+                messages=self._messages,
+                tools=self._tools_definition,
                 stream=True,
             )
-            message = self._read_response_stream(stream)
-            
-            self.messages.append(self.parse_response_message(message))
-            self.save_log()
+            message = self._read_response_stream(stream, in_deep_thinking)
+
+            self._messages.append(self._parse_response_message(message))
+            self._save_log()
             if hasattr(message, "tool_calls") and message.tool_calls:
                 for tool_call in message.tool_calls:
                     args = tool_call.function.arguments
                     if isinstance(args, str):
                         args = json.loads(args)
-                    self.messages.append({
+                    content = await self._tools.exec(tool_call.function.name, args)
+                    self._messages.append({
                         "role": "tool",
                         "tool_call_id": tool_call.id,
                         "name": tool_call.function.name,
-                        "content": self.tools.exec(tool_call.function.name, args),
+                        "content": content,
                     })
-                return self.think("思考执行结果并决定下一步行动.")
+                return await self.think("思考执行结果并决定下一步行动.", True)
             else:
-                return message.content
+                print("\n...深度思考结束...\n")
+                print(message.content)
         except Exception as e:
-            return f"思考过程出错: {e}"
+            print(f"思考过程出错: {e}")
 
-    def parse_response_message(self, message):
+    def _parse_response_message(self, message):
         result = {
             "role": message.role,
             "content": message.content,
@@ -119,6 +123,6 @@ class AgentBrain:
             ]
         return result
 
-    def save_log(self):
+    def _save_log(self):
         with open("log.txt", "a") as f:
-            f.write(json.dumps(self.messages, indent=4, ensure_ascii=False))
+            f.write(json.dumps(self._messages, indent=4, ensure_ascii=False))
