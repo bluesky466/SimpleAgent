@@ -4,15 +4,18 @@ import platform
 import base64
 import mimetypes
 import re
+import os
 from pathlib import Path
+from tool.tool_manager import ToolManager
 
 IMG_PLACEHOLDER_PATTERN = re.compile(r"\{img:([^}]+)\}")
 
 class AgentBrain:
-    async def init(self, tools):
-        self._model = "zai/glm-4.6v"
-        self._tools = tools
-        self._tools_definition = await tools.get_tool_definition_for_json()
+    async def init(self, llm_config, tool_manager: ToolManager):
+        self._model = llm_config["model"]
+        self._api_key = llm_config["api_key"]
+        self._tools = tool_manager
+        self._tools_definition = await tool_manager.get_tool_definition()
         self._messages = [{"role": "system", "content": self._get_system_prompt()},]
 
     def _get_system_prompt(self):
@@ -84,6 +87,7 @@ class AgentBrain:
 
             stream = completion(
                 model=self._model,
+                api_key=self._api_key,
                 messages=self._messages,
                 tools=self._tools_definition,
                 stream=True,

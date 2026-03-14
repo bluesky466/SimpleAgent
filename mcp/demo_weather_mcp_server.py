@@ -1,14 +1,10 @@
 from fastmcp import FastMCP,Context
 from fastmcp.resources import ResourceContent
-import mcp.types as mcp_types
-
 mcp = FastMCP("demo-weather-server")
 
 @mcp.tool
 async def get_weather(city: str) -> dict:
-	"""Get the current weather for a city. get support cities from resource weather://citys"""
-	with open("log.txt", "a") as f:
-		f.write(f"Calling tool get_weather with arguments {city}\n")
+	"""Get the current weather for a city. should get support cities from resource weather://citys first"""
 	weather_data = {
 		"guangzhou": {"temp": 72, "condition": "sunny"},
 		"shanghai": {"temp": 59, "condition": "cloudy"},

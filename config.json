@@ -1,0 +1,17 @@
+{
+	"llm": {
+		"api_key" : "<智谱的api key>",
+		"model": "zai/glm-4.6v"
+	},
+	"mcp": {
+		"weather_mcp_server" : {
+			"command": "python3",
+			"args": [
+				"./mcp/demo_weather_mcp_server.py"
+			]
+		},
+		"zhipu-web-search-sse": {
+			"url": "https://open.bigmodel.cn/api/mcp/web_search/sse?Authorization=<智谱的api key>"
+		}
+	}
+}
