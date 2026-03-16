@@ -26,7 +26,7 @@ class SimpleAgent:
 
             await self._brain.init(self._config["llm"], self._tool_manager)
             while True:
-                user_input = input("请输入(Ctrl+C 退出): ")
+                user_input = input("请输入(Ctrl+D 退出): ")
                 if len(user_input) == 0:
                     continue
                 print("." * 20)

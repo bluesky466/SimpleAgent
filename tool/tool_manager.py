@@ -40,11 +40,8 @@ class ToolManager():
         return definition_list
     
     async def exec(self, func_name, arguments):
-        try:
-            print(f"调用工具: {func_name}, 参数: {arguments}")
-            result = await self._tools[func_name].exec(arguments or {})
-            result = json.dumps(result) if not isinstance(result, str) else result
-            print(f"工具调用结果: {result}")
-            return result
-        except Exception as e:
-            raise ValueError(f"未知工具或 MCP 调用失败: {func_name}")
+        print(f"调用工具: {func_name}, 参数: {arguments}")
+        result = await self._tools[func_name].exec(arguments or {})
+        result = json.dumps(result) if not isinstance(result, str) else result
+        print(f"工具调用结果: {result}")
+        return result

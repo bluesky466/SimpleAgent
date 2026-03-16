@@ -95,7 +95,6 @@ class AgentBrain:
             message = self._read_response_stream(stream, in_deep_thinking)
 
             self._messages.append(self._parse_response_message(message))
-            self._save_log()
             if hasattr(message, "tool_calls") and message.tool_calls:
                 for tool_call in message.tool_calls:
                     args = tool_call.function.arguments
@@ -126,7 +125,3 @@ class AgentBrain:
                 {"id":tc.id, "type":tc.type, "function":{"name":tc.function.name, "arguments":tc.function.arguments}} for tc in message.tool_calls
             ]
         return result
-
-    def _save_log(self):
-        with open("log.txt", "a") as f:
-            f.write(json.dumps(self._messages, indent=4, ensure_ascii=False))
