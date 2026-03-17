@@ -14,7 +14,7 @@ class LocalTool(Tool):
         return self._function_name
     
     def get_definition(self) -> dict:
-        return f"###{self.get_name()}\n{self._doc_info}"
+        return f"### {self.get_name()}\n{self._doc_info}"
 
     def exec(self, arguments):
         func = getattr(self._tool, self._function_name)

@@ -7,24 +7,23 @@ class AgentMemory:
     def _get_system_prompt(self, tool_definition: str):
         runtime = f"{platform.system()} {platform.machine()}, Python {platform.python_version()}"
         return f"""
-        你是一个AI智能助手.
+你是一个AI智能助手.
 
-        ## 运行环境
-        {runtime}
+## 运行环境
+{runtime}
 
-        ## 可用工具列表
-        {tool_definition}
+## 可用工具列表
+{tool_definition}
 
-        ## 工具调用方法
-        当你需要调用工具的时候,严格按照下面格式输出,我会判断返回的第一个字符是'{{'且最后一个字符是'}}'就去调用工具:
-        {{
-            "message":"你想说的话"
-            "tool_name": "工具名称",
-            "tool_args": {{
-                "参数名称": "参数值"
-            }}
-        }}"""
-
+## 工具调用方法
+当你需要调用工具的时候,严格按照下面格式输出,我会判断返回的第一个字符是'{{'且最后一个字符是'}}'就去调用工具:
+{{
+    "message":"你想说的话"
+    "tool_name": "工具名称",
+    "tool_args": {{
+        "参数名称": "参数值"
+    }}
+}}"""
     def _parse_response_message(self, role: str, message):
         result = {
             "role": role,
