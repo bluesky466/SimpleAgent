@@ -41,7 +41,10 @@ class ToolManager():
     
     def exec(self, func_name: str, arguments: dict):
         print(f"调用工具: {func_name}, 参数: {arguments}")
-        result = self._tools[func_name].exec(arguments or {})
-        result = json.dumps(result) if not isinstance(result, str) else result
+        try:
+            result = self._tools[func_name].exec(arguments or {})
+            result = json.dumps(result) if not isinstance(result, str) else result
+        except Exception as e:
+            result = str(e)
         print(f"工具调用结果: {result}")
         return result
