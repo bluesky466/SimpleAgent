@@ -1,15 +1,14 @@
 from zhipuai import ZhipuAI
-import os
 
 class AgentBrain:
-    def __init__(self):
-        self.model = "glm-4.7"
-        self.client = ZhipuAI(api_key=os.environ.get("ZAI_API_KEY"))
+    def __init__(self, llm_config: dict):
+        self._model = llm_config["model"]
+        self._client = ZhipuAI(api_key=llm_config["api_key"])
 
     def think(self, prompt):
         try:
-            message = self.client.chat.completions.create(
-                model=self.model,
+            message = self._client.chat.completions.create(
+                model=self._model,
                 messages=[{"role": "user", "content": prompt}],
             ).choices[0].message
             return message.content
