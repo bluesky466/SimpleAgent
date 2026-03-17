@@ -1,4 +1,5 @@
 from tool.tool_manager import Tool, ToolProvider
+from docstring_parser import parse as parse_docstring
 import json
 import os
 
@@ -8,13 +9,32 @@ class LocalTool(Tool):
     def __init__(self, tool, function_name, function):
         self._tool = tool
         self._function_name = function_name
-        self._doc_info = function.__doc__ or ""
+        self._function = function
+        self._doc_info = parse_docstring(function.__doc__ or "")
+        self._params = {}
+        self._required_params = []
+
+        for param in self._doc_info.params:
+            ann = function.__annotations__.get(param.arg_name)
+            type_name = getattr(ann, "__name__", "string") if ann else "string"
+            self._params[param.arg_name] = {
+                "type": self.__TYPE_MAP.get(type_name, type_name),
+                "description": param.description or ""
+            }
+            self._required_params.append(param.arg_name)
     
     def get_name(self) -> str:
         return self._function_name
     
     def get_definition(self) -> dict:
-        return f"### {self.get_name()}\n{self._doc_info}"
+        return {
+            "type": "function",
+            "function": {
+                "name": self.get_name(),
+                "description": self._doc_info.short_description or "",
+                "parameters": {"type": "object", "properties": self._params, "required": self._required_params}
+            }
+        }
 
     def exec(self, arguments):
         func = getattr(self._tool, self._function_name)

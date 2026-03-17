@@ -9,8 +9,8 @@ class SimpleAgent:
     def __init__(self, config: dict):
         self._tool_manager = ToolManager()
         self._tool_manager.add_tool_provider(LocalToolProvider())
-        self._memory = AgentMemory(self._tool_manager.get_tool_definition())
-        self._brain = AgentBrain(config["llm"], self._memory)
+        self._memory = AgentMemory()
+        self._brain = AgentBrain(config["llm"], self._memory, self._tool_manager)
         
     def run(self):
         while True:
@@ -24,12 +24,13 @@ class SimpleAgent:
             print("." * 20)
             response = self._brain.think(user_input)
 
-            while response.content.strip().startswith("{"):
-                tool_call = json.loads(response.content.strip())
-                tool_name = tool_call["tool_name"]
-                tool_args = tool_call["tool_args"]
-                result = self._tool_manager.exec(tool_name, tool_args)
-                self._memory.add_tool_invoke_result(tool_name, tool_args, result)
+            while hasattr(response, "tool_calls") and response.tool_calls:
+                for tool_call in response.tool_calls:
+                    id = tool_call.id
+                    tool_name = tool_call.function.name
+                    args = json.loads(tool_call.function.arguments)
+                    result = self._tool_manager.exec(tool_name, args)
+                    self._memory.add_tool_invoke_result(id, tool_name, args, result)
                 response = self._brain.think("思考执行结果并决定下一步行动.")
             print(response.content)
             print("=" * 20)

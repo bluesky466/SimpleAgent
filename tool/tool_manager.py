@@ -37,7 +37,7 @@ class ToolManager():
         definition_list = []
         for tool in self._tools.values():
             definition_list.append(tool.get_definition())
-        return "\n".join(definition_list)
+        return definition_list
     
     def exec(self, func_name: str, arguments: dict):
         print(f"调用工具: {func_name}, 参数: {arguments}")
