@@ -1,10 +1,12 @@
 from agent_brain import AgentBrain
+from agent_memory import AgentMemory
 import json
 import os
 
 class SimpleAgent:
     def __init__(self, config: dict):
-        self._brain = AgentBrain(config["llm"])
+        self._memory = AgentMemory()
+        self._brain = AgentBrain(config["llm"], self._memory)
     
     def run(self):
         while True:
