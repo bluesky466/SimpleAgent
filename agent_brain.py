@@ -10,11 +10,11 @@ class AgentBrain:
     def think(self, prompt):
         try:
             self._memory.add_user_prompt(prompt)
-            response = self._client.chat.completions.create(
-                model=self._model,
-                messages=self._memory.get_memory(),
+            message = self._client.chat.completions.create(
+                model = self._model,
+                messages = self._memory.get_memory(),
             ).choices[0].message
-            self._memory.add_agent_response(response)
-            return response.content
+            self._memory.add_agent_response(message)
+            return message
         except Exception as e:
             return f"思考过程出错: {e}"
