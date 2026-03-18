@@ -1,6 +1,6 @@
 {
 	"llm": {
 		"api_key" : "<这里填你的智谱apikey>",
-		"model": "glm-4.7"
+		"model": "zai/glm-4.7"
 	}
 }

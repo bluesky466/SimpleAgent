@@ -1,2 +1,2 @@
-zhipuai==2.1.5.20250825
+litellm==1.81.16
 docstring_parser==0.17.0
