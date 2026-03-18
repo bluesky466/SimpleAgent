@@ -29,8 +29,8 @@ class AgentMemory:
         self._memory.append({
             "role": "tool",
             "tool_call_id": tool_call_id,
-            "tool_name": tool_name,
-            "tool_args": tool_args,
+            "name": tool_name,
+            "arguments": tool_args,
             "content": result,
         })
 
