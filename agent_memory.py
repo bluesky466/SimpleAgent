@@ -24,8 +24,8 @@ class AgentMemory:
             ]
         return result
 
-    def add_user_prompt(self, prompt: str):
-        self._memory.append({"role": "user", "content": prompt})
+    def add_user_content(self, content: str | list):
+        self._memory.append({"role": "user", "content": content})
     
     def add_agent_response(self, message):
         self._memory.append(self._parse_response_message("assistant", message))
