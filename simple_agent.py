@@ -10,7 +10,14 @@ class SimpleAgent:
         self._tool_manager = ToolManager()
         self._tool_manager.add_tool_provider(LocalToolProvider())
         self._memory = AgentMemory()
-        self._brain = AgentBrain(config["llm"], self._memory, self._tool_manager)
+        self._brain = AgentBrain(config["llm"], self._memory, self._tool_manager, self._stream_trace_reader)
+        self._is_in_thinking = False
+    
+    def _stream_trace_reader(self, type: str, content: str):
+        if not self._is_in_thinking:
+            self._is_in_thinking = True
+            print("...思考中...")
+        print(content, end="", flush=True)
         
     def run(self):
         while True:
@@ -32,6 +39,9 @@ class SimpleAgent:
                     result = self._tool_manager.exec(tool_name, args)
                     self._memory.add_tool_invoke_result(id, tool_name, args, result)
                 response = self._brain.think("思考执行结果并决定下一步行动.")
+            if self._is_in_thinking:
+                self._is_in_thinking = False
+                print("\n...思考结束...")
             print(response.content)
             print("=" * 20)
         

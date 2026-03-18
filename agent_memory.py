@@ -14,9 +14,14 @@ class AgentMemory:
 
     def _parse_response_message(self, role: str, message):
         result = {
-            "role": role,
-            "content": message.content,
+            "role": message.role,
+            "content": getattr(message, "content", None),
+            "reasoning_content": getattr(message, "reasoning_content", None),
         }
+        if hasattr(message, "tool_calls") and message.tool_calls:
+            result["tool_calls"] = [
+                {"id":tc.id, "type":tc.type, "function":{"name":tc.function.name, "arguments":tc.function.arguments}} for tc in message.tool_calls
+            ]
         return result
 
     def add_user_prompt(self, prompt: str):
@@ -29,8 +34,8 @@ class AgentMemory:
         self._memory.append({
             "role": "tool",
             "tool_call_id": tool_call_id,
-            "tool_name": tool_name,
-            "tool_args": tool_args,
+            "name": tool_name,
+            "arguments": tool_args,
             "content": result,
         })
 
