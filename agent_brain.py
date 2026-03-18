@@ -12,6 +12,7 @@ IMG_PLACEHOLDER_PATTERN = re.compile(r"\{img:([^}]+)\}")
 class AgentBrain:
     def __init__(self, llm_config: dict, memory: AgentMemory, tool_manager: ToolManager, stream_trace_reader: Callable[[str, str], None]):
         self._model = llm_config["model"]
+        self._model_support_vision = llm_config["model_support_vision"]
         self._api_key = llm_config["api_key"]
         self._memory = memory
         self._tools_definition = tool_manager.get_tool_definition()
@@ -68,14 +69,18 @@ class AgentBrain:
 
     def think(self, prompt):
         try:
-            self._memory.add_user_content(self._prompt_to_content(prompt))
+            content = self._prompt_to_content(prompt)
+            need_support_vision = content and isinstance(content, list)
+            model = self._model_support_vision if need_support_vision else self._model
+            messages = self._memory.get_memory() + [{"role": "user", "content": content}]
             stream = completion(
-                model = self._model,
-                messages = self._memory.get_memory(),
+                model = model,
+                messages = messages,
                 tools=self._tools_definition,
                 api_key=self._api_key,
                 stream=True,
             )
+            self._memory.add_user_content(prompt)
             message = self._read_response_stream(stream)
             self._memory.add_agent_response(message)
             return message
