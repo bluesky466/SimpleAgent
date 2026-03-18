@@ -1,7 +1,8 @@
 {
 	"llm": {
 		"api_key" : "<智谱的api key>",
-		"model": "zai/glm-4.6v"
+		"model": "zai/glm-4.7",
+		"model_support_vision": "zai/glm-4.6v"
 	},
 	"mcp": {
 		"weather_mcp_server" : {
