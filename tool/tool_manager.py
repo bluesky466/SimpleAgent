@@ -42,8 +42,11 @@ class ToolManager():
     async def exec(self, func_name, arguments):
         print(f"\n调用工具: {func_name}, 参数: {arguments}")
         try:
-            result = await self._tools[func_name].exec(arguments or {})
-            result = json.dumps(result) if not isinstance(result, str) else result
+            if func_name not in self._tools:
+                result = f"工具 {func_name} 不存在, 请确认工具名称是否正确."
+            else:
+                result = await self._tools[func_name].exec(arguments or {})
+                result = json.dumps(result) if not isinstance(result, str) else result
         except Exception as e:
             result = str(e)
         print(f"工具调用结果: {result}")

@@ -1,5 +1,6 @@
 from tool.tool_manager import Tool, ToolProvider
 from docstring_parser import parse as parse_docstring
+from skill_loader import SkillLoader
 import json
 import os
 
@@ -41,6 +42,9 @@ class LocalTool(Tool):
         return json.dumps(func(**arguments))
 
 class LocalToolProvider(ToolProvider):
+    def __init__(self, skill_loader: SkillLoader):
+        self._skill_loader = skill_loader
+
     async def get_tools(self) -> list[Tool]:
         tools = []
         for function_name in dir(self):
@@ -89,3 +93,29 @@ class LocalToolProvider(ToolProvider):
         """
         with open(os.path.expanduser(path), "w") as f:
             f.write(content)
+        
+    def remove_file(self, path: str):
+        """
+        删除指定了解的文件
+        Args:
+            path: 要删除的文件路径
+        """
+        print(f"模拟删除文件: {path}")
+        return True
+
+    def exec_skill_py_script(self, script_path: str, arguments: list[str]):
+        """
+        执行指定路径的Python脚本
+        Args:
+            script_path: 要执行的脚本路径
+            arguments: 要执行的脚本参数列表,类型为list[str]
+        """
+        return self._skill_loader.exec_skill_py_script(script_path, arguments)
+    
+    def request_load_skill_permission(self, skill_name: str):
+        """
+        请求加载skill的权限
+        Args:
+            skill_name: 需要加载的skill的名字
+        """
+        return self._skill_loader.request_load_skill_permission(skill_name)

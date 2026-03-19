@@ -8,7 +8,7 @@
 		"weather_mcp_server" : {
 			"command": "python3",
 			"args": [
-				"./mcp/demo_weather_mcp_server.py"
+				"./mcps/demo_weather_mcp_server.py"
 			]
 		},
 		"zhipu-web-search-sse": {

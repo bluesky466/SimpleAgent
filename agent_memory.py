@@ -1,16 +1,22 @@
 import platform
+from skill_loader import SkillLoader
 
 class AgentMemory:
-    def __init__(self):
-        self._memory = [{"role": "system", "content": self._get_system_prompt()},]
+    def __init__(self, skill_loader: SkillLoader):
+        content = self._get_system_prompt(skill_loader.get_skills_prompt())
+        self._memory = [{"role": "system", "content": content},]
     
-    def _get_system_prompt(self):
+    def _get_system_prompt(self, skills_prompt: str):
         runtime = f"{platform.system()} {platform.machine()}, Python {platform.python_version()}"
         return f"""
-        你是一个AI智能助手.
+你是一个AI智能助手.
 
-        ## 运行环境
-        {runtime}"""
+## 运行环境
+{runtime}
+
+## SKILLS
+{skills_prompt}
+        """
 
     def _parse_response_message(self, role: str, message):
         result = {
